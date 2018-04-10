@@ -30,7 +30,7 @@ app.use(errorhandler())
 mongodb.MongoClient.connect(url, (error, client) => {
 	if (error) return process.exit(1)
 	var db = client.db('edx-course-db')
-	
+	console.log('Connected successfully to server')
 	app.get('/accounts', (req, res) => {
 		db.collection('accounts')
 			.find({}, {sort: {_id: -1}})
