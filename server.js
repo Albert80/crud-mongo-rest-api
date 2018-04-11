@@ -25,12 +25,12 @@ const port = 3000
 let app = express()
 app.use(logger('dev'))
 app.use(bodyParser.json())
-app.use(errorhandler())
 
 mongodb.MongoClient.connect(url, (error, client) => {
 	if (error) return process.exit(1)
 	var db = client.db('edx-course-db')
 	console.log('Connected successfully to server')
+	
 	app.get('/accounts', (req, res) => {
 		db.collection('accounts')
 			.find({}, {sort: {_id: -1}})
@@ -39,6 +39,16 @@ mongodb.MongoClient.connect(url, (error, client) => {
 				res.send(accounts)
 			})
 	})
+
+	app.get('/accounts/:id', (req, res) => {
+		db.collection('accounts')
+			.find({ _id: mongodb.ObjectID(req.params.id)}, {sort: { _id: -1}})
+			.toArray((error, accounts) => {
+				if (error) return next(error)
+				res.send(accounts)
+			})
+	})
+
 	app.post('/accounts', (req, res) => {
 		let newAccount = req.body
 		db.collection('accounts').insert(newAccount, (error, results) => {
@@ -46,6 +56,7 @@ mongodb.MongoClient.connect(url, (error, client) => {
 			res.send(results)
 		})
 	})
+
 	app.put('/accounts/:id', (req, res) => {
 		db.collection('accounts')
 			.update({_id: mongodb.ObjectID(req.params.id)},
@@ -55,6 +66,7 @@ mongodb.MongoClient.connect(url, (error, client) => {
 					res.send(results)
 				})
 	})
+
 	app.delete('/accounts/:id', (req, res) => {
 		db.collection('accounts')
 			.remove({_id: mongodb.ObjectID( req.params.id )}, (error, results) => {
@@ -63,5 +75,6 @@ mongodb.MongoClient.connect(url, (error, client) => {
 			})
 	})
 
+	app.use(errorhandler())
 	app.listen(port)
 })
